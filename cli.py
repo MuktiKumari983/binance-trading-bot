@@ -55,11 +55,29 @@ def main():
     print("         BINANCE RESPONSE DETAILS")
     print("="*40)
     if success:
+        # Extract the fields safely using fallback keys
+        status = result.get("status", "UNKNOWN")
+        
+        # Check 'cumQty' if 'executedQty' is empty or zero
+        executed_qty = result.get("executedQty")
+        if not executed_qty or float(executed_qty) == 0:
+            executed_qty = result.get("cumQty", "0.0000")
+            
+        # Extract or dynamically calculate average price
+        avg_price = result.get("avgPrice")
+        if not avg_price or float(avg_price) == 0:
+            cum_quote = float(result.get("cumQuote", 0))
+            exec_qty_val = float(executed_qty)
+            if exec_qty_val > 0 and cum_quote > 0:
+                avg_price = f"{cum_quote / exec_qty_val:.2f}"
+            else:
+                avg_price = result.get("price", "N/A")
+
         print("✅ STATUS: SUCCESS")
         print(f"📝 Order ID:      {result.get('orderId')}")
-        print(f"📈 Order Status:   {result.get('status')}")
-        print(f"📦 Executed Qty:  {result.get('executedQty')}")
-        print(f"💵 Avg Price:     {result.get('avgPrice', 'N/A')}")
+        print(f"📈 Order Status:   {status}")
+        print(f"📦 Executed Qty:   {executed_qty}")
+        print(f"💵 Avg Price:      {avg_price}")
     else:
         print("❌ STATUS: FAILED")
         print(f"⚠️ Message: {result.get('msg', result)}")

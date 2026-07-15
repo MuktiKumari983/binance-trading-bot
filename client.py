@@ -33,6 +33,29 @@ class BinanceFuturesClient:
             hashlib.sha256
         ).hexdigest()
 
+    def get_order_status(self, symbol: str, order_id: int):
+        """Fetches the latest execution status of a specific order (Required to get true MARKET order fills)"""
+        endpoint = "/fapi/v1/order"
+        timestamp = int(time.time() * 1000)
+        
+        params = {
+            "symbol": symbol.upper(),
+            "orderId": order_id,
+            "timestamp": timestamp
+        }
+        
+        query_string = "&".join([f"{k}={v}" for k, v in params.items()])
+        signature = self._generate_signature(query_string)
+        full_url = f"{BASE_URL}{endpoint}?{query_string}&signature={signature}"
+        
+        try:
+            response = requests.get(full_url, headers=self.headers)
+            if response.status_code == 200:
+                return response.json()
+        except Exception as e:
+            logging.error(f"Failed to fetch updated order status: {str(e)}")
+        return None
+
     def place_order(self, symbol: str, side: str, order_type: str, quantity: float, price: float = None):
         endpoint = "/fapi/v1/order"
         timestamp = int(time.time() * 1000) # Binance requires timestamps in milliseconds
@@ -67,6 +90,14 @@ class BinanceFuturesClient:
             
             if response.status_code == 200:
                 logging.info("Order successfully executed on Testnet!")
+                
+                # FIX: If it's a MARKET order, instantly query it again to catch the 'FILLED' status details
+                if order_type.upper() == "MARKET" and "orderId" in response_data:
+                    time.sleep(0.2) # Micro-pause to let the matching engine execute the fill
+                    updated_data = self.get_order_status(symbol, response_data["orderId"])
+                    if updated_data:
+                        response_data = updated_data
+                
                 return True, response_data
             else:
                 logging.error(f"Binance rejected the order: {response_data}")
