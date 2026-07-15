@@ -14,3 +14,7 @@
 2026-07-15 13:20:30,101 - INFO - Order successfully executed on Testnet!
 2026-07-15 13:22:47,504 - INFO - Sending request to Binance -> MARKET BUY 0.005 BTCUSDT
 2026-07-15 13:22:48,306 - INFO - Order successfully executed on Testnet!
+2026-07-15 13:34:00,992 - INFO - Sending request to Binance -> MARKET BUY 0.005 BTCUSDT
+2026-07-15 13:34:01,728 - INFO - Order successfully executed on Testnet!
+2026-07-15 13:34:11,464 - INFO - Sending request to Binance -> LIMIT SELL 0.005 BTCUSDT
+2026-07-15 13:34:12,223 - INFO - Order successfully executed on Testnet!
